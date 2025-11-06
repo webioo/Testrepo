@@ -93,9 +93,14 @@ h1.temp {
     align-items: center;
 }
 
+.icon {
+    font-size: 64px;
+    line-height: 1;
+}
+
 .description {
     text-transform: capitalize;
-    margin-left: 6px;
+    margin-left: 12px;
 }
 
 .weather.loading{

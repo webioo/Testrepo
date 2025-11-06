@@ -1,44 +1,89 @@
 let weather={
-    "apiKey": "8a325d134d29aa38fb54708d57f80d3a",
-
-    // Fetch weather by city name
+    // Fetch weather by city name (first geocode, then get weather)
     fetchWeather: function(city) {
         console.log("Fetching weather for city:", city);
-        fetch("https://api.openweathermap.org/data/2.5/weather?q="
-        + city
-        + "&units=metric&appid="
-        + this.apiKey
-        )
-        .then((response)=> {
-            console.log("Weather API response:", response);
-            return response.json();
+        // First, get coordinates for the city using geocoding API
+        fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`)
+        .then((response)=> response.json())
+        .then((data) => {
+            console.log("Geocoding data:", data);
+            if (data.results && data.results.length > 0) {
+                const location = data.results[0];
+                const lat = location.latitude;
+                const lon = location.longitude;
+                const cityName = location.name;
+                const country = location.country;
+                console.log(`Found: ${cityName}, ${country} at ${lat}, ${lon}`);
+                this.fetchWeatherByCoords(lat, lon, `${cityName}, ${country}`);
+            } else {
+                console.error("City not found");
+                document.querySelector(".city").innerText = "City not found";
+            }
         })
-        .then((data) => this.displayWeather(data))
-        .catch((error) => console.error("Error fetching weather:", error));
+        .catch((error) => console.error("Error fetching location:", error));
     },
 
-    // Fetch weather by coordinates (for geolocation)
-    fetchWeatherByCoords: function(lat, lon) {
+    // Fetch weather by coordinates using Open-Meteo API
+    fetchWeatherByCoords: function(lat, lon, locationName = null) {
         console.log("Fetching weather for coordinates:", lat, lon);
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`)
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,is_day&timezone=auto`)
         .then((response)=> {
             console.log("Weather API response:", response);
             return response.json();
         })
-        .then((data) => this.displayWeather(data))
+        .then((data) => {
+            console.log("Weather data:", data);
+            // Add location name to data
+            if (locationName) {
+                data.locationName = locationName;
+            } else {
+                data.locationName = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+            }
+            this.displayWeather(data);
+        })
         .catch((error) => console.error("Error fetching weather:", error));
     },
 
-    // Get time of day based on sunrise/sunset and current time
-    getTimeOfDay: function(sunrise, sunset, timezone) {
-        const now = Math.floor(Date.now() / 1000);
-        const localNow = now + timezone;
-        const localSunrise = sunrise + timezone;
-        const localSunset = sunset + timezone;
+    // Convert Open-Meteo weather code to condition
+    getWeatherCondition: function(weatherCode) {
+        // WMO Weather interpretation codes
+        if (weatherCode === 0) return { main: 'clear', description: 'Clear sky' };
+        if (weatherCode === 1) return { main: 'clouds', description: 'Mainly clear' };
+        if (weatherCode === 2) return { main: 'clouds', description: 'Partly cloudy' };
+        if (weatherCode === 3) return { main: 'clouds', description: 'Overcast' };
+        if (weatherCode === 45 || weatherCode === 48) return { main: 'fog', description: 'Foggy' };
+        if (weatherCode >= 51 && weatherCode <= 57) return { main: 'drizzle', description: 'Drizzle' };
+        if (weatherCode >= 61 && weatherCode <= 67) return { main: 'rain', description: 'Rain' };
+        if (weatherCode >= 71 && weatherCode <= 77) return { main: 'snow', description: 'Snow' };
+        if (weatherCode >= 80 && weatherCode <= 82) return { main: 'rain', description: 'Rain showers' };
+        if (weatherCode >= 85 && weatherCode <= 86) return { main: 'snow', description: 'Snow showers' };
+        if (weatherCode >= 95 && weatherCode <= 99) return { main: 'thunderstorm', description: 'Thunderstorm' };
+        return { main: 'clouds', description: 'Cloudy' };
+    },
 
-        const hour = new Date(localNow * 1000).getUTCHours();
+    // Get weather icon based on condition
+    getWeatherIcon: function(condition, isDay) {
+        const icons = {
+            'clear': isDay ? '☀️' : '🌙',
+            'clouds': '☁️',
+            'rain': '🌧️',
+            'drizzle': '🌦️',
+            'thunderstorm': '⛈️',
+            'snow': '❄️',
+            'fog': '🌫️',
+            'mist': '🌫️',
+            'haze': '🌫️'
+        };
+        return icons[condition] || '🌤️';
+    },
 
-        if (localNow < localSunrise || localNow > localSunset) {
+    // Get time of day based on current hour and isDay flag
+    getTimeOfDay: function(isDay, currentTime) {
+        // Parse hour from ISO 8601 time string
+        const date = new Date(currentTime);
+        const hour = date.getHours();
+
+        if (!isDay) {
             return 'night';
         } else if (hour >= 5 && hour < 12) {
             return 'morning';
@@ -139,22 +184,36 @@ let weather={
     displayWeather: function(data) {
         console.log("Weather data received:", data);
 
-        const { name } = data;
-        const { icon, description, main: weatherMain } = data.weather[0];
-        const { temp, humidity } = data.main;
-        const { speed } = data.wind;
-        const { sunrise, sunset, timezone } = data.sys;
+        const locationName = data.locationName;
+        const current = data.current;
+
+        // Extract weather data from Open-Meteo
+        const temp = current.temperature_2m;
+        const humidity = current.relative_humidity_2m;
+        const windSpeed = current.wind_speed_10m;
+        const weatherCode = current.weather_code;
+        const isDay = current.is_day; // 1 for day, 0 for night
+        const currentTime = current.time;
+
+        // Get weather condition from code
+        const weatherCondition = this.getWeatherCondition(weatherCode);
+        const weatherMain = weatherCondition.main;
+        const description = weatherCondition.description;
 
         // Get time of day
-        const timeOfDay = this.getTimeOfDay(sunrise, sunset, timezone);
+        const timeOfDay = this.getTimeOfDay(isDay, currentTime);
+
+        // Get weather icon
+        const icon = this.getWeatherIcon(weatherMain, isDay);
 
         // Update weather info
-        document.querySelector(".city").innerText= "Weather in " +  name;
-        document.querySelector(".icon").src="http://openweathermap.org/img/wn/" + icon + "@2x.png";
+        document.querySelector(".city").innerText = "Weather in " + locationName;
+        document.querySelector(".icon").innerText = icon; // Use emoji icon
+        document.querySelector(".icon").style.fontSize = "64px"; // Make icon larger
         document.querySelector(".description").innerText = description;
-        document.querySelector(".temp").innerText = temp + "°C" ;
-        document.querySelector(".humidity").innerText = "Humidity: " + humidity + "%" ;
-        document.querySelector(".wind").innerText = "Wind speed: " + speed + "km/hr" ;
+        document.querySelector(".temp").innerText = temp + "°C";
+        document.querySelector(".humidity").innerText = "Humidity: " + humidity + "%";
+        document.querySelector(".wind").innerText = "Wind speed: " + windSpeed + " km/h";
         document.querySelector(".weather").classList.remove("loading");
 
         // Set dynamic background gradient based on weather and time
