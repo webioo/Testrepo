@@ -51,69 +51,89 @@ let weather={
         }
     },
 
-    // Get background based on weather condition and time of day
+    // Get background gradient based on weather condition and time of day
     getBackgroundForWeather: function(weatherMain, weatherDescription, timeOfDay) {
         const condition = weatherMain.toLowerCase();
         const description = weatherDescription.toLowerCase();
 
-        // Weather-based background keywords for Unsplash
-        let backgroundQuery = '';
+        let gradient = '';
 
         switch(condition) {
             case 'clear':
                 if (timeOfDay === 'night') {
-                    backgroundQuery = 'starry night sky';
+                    // Starry night - deep blue to purple
+                    gradient = 'linear-gradient(to bottom, #0f2027, #203a43, #2c5364)';
                 } else if (timeOfDay === 'morning') {
-                    backgroundQuery = 'clear sunrise sky';
+                    // Sunrise - warm oranges and yellows
+                    gradient = 'linear-gradient(to bottom, #ff6b6b, #feca57, #48dbfb)';
                 } else if (timeOfDay === 'evening') {
-                    backgroundQuery = 'clear sunset sky';
+                    // Sunset - orange to purple
+                    gradient = 'linear-gradient(to bottom, #ff6348, #ff7f50, #ee5a6f, #c44569)';
                 } else {
-                    backgroundQuery = 'clear blue sky sunshine';
+                    // Clear day - bright blue
+                    gradient = 'linear-gradient(to bottom, #56ccf2, #2f80ed)';
                 }
                 break;
+
             case 'clouds':
                 if (description.includes('few')) {
-                    backgroundQuery = `partly cloudy ${timeOfDay} sky`;
+                    // Partly cloudy
+                    gradient = 'linear-gradient(to bottom, #bdc3c7, #2c3e50)';
                 } else if (description.includes('overcast')) {
-                    backgroundQuery = 'overcast grey sky';
+                    // Overcast - grey
+                    gradient = 'linear-gradient(to bottom, #757f9a, #d7dde8)';
                 } else {
-                    backgroundQuery = `cloudy ${timeOfDay} sky`;
+                    // Cloudy
+                    gradient = 'linear-gradient(to bottom, #7f8c8d, #95a5a6, #bdc3c7)';
                 }
                 break;
+
             case 'rain':
             case 'drizzle':
-                backgroundQuery = 'rainy weather city';
+                // Rainy - dark blue grey
+                gradient = 'linear-gradient(to bottom, #304352, #556270, #667db6)';
                 break;
+
             case 'thunderstorm':
-                backgroundQuery = 'thunderstorm lightning storm';
+                // Thunderstorm - dark dramatic
+                gradient = 'linear-gradient(to bottom, #1e3c72, #2a5298, #7e8ba3)';
                 break;
+
             case 'snow':
-                backgroundQuery = 'snowy winter landscape';
+                // Snowy - white to light blue
+                gradient = 'linear-gradient(to bottom, #e6e9f0, #a8b8d8, #7f8fa6)';
                 break;
+
             case 'mist':
             case 'fog':
             case 'haze':
-                backgroundQuery = 'foggy misty weather';
+                // Foggy - soft grey
+                gradient = 'linear-gradient(to bottom, #c2cad0, #a6b1bb, #8a9aa6)';
                 break;
+
             case 'smoke':
-                backgroundQuery = 'smoky hazy atmosphere';
+                // Smoky - warm grey
+                gradient = 'linear-gradient(to bottom, #8b7e74, #7d6e5f, #5f4e3d)';
                 break;
+
             case 'dust':
             case 'sand':
-                backgroundQuery = 'dust storm desert';
+                // Dusty - sandy colors
+                gradient = 'linear-gradient(to bottom, #c79081, #dfa579, #e0c097)';
                 break;
+
             default:
-                backgroundQuery = `${timeOfDay} sky nature`;
+                // Default based on time of day
+                if (timeOfDay === 'night') {
+                    gradient = 'linear-gradient(to bottom, #141e30, #243b55)';
+                } else {
+                    gradient = 'linear-gradient(to bottom, #4ca1af, #c4e0e5)';
+                }
         }
 
-        // Add timestamp to prevent caching and get different images
-        const timestamp = new Date().getTime();
-        const url = `https://source.unsplash.com/1920x1080/?${encodeURIComponent(backgroundQuery)}&sig=${timestamp}`;
+        console.log(`Weather: ${condition}, Time: ${timeOfDay}, Gradient: ${gradient}`);
 
-        console.log(`Weather: ${condition}, Time: ${timeOfDay}, Background: ${backgroundQuery}`);
-        console.log(`Background URL: ${url}`);
-
-        return url;
+        return gradient;
     },
 
     displayWeather: function(data) {
@@ -137,18 +157,16 @@ let weather={
         document.querySelector(".wind").innerText = "Wind speed: " + speed + "km/hr" ;
         document.querySelector(".weather").classList.remove("loading");
 
-        // Set dynamic background based on weather and time
-        const backgroundUrl = this.getBackgroundForWeather(weatherMain, description, timeOfDay);
-        console.log("Setting background to:", backgroundUrl);
+        // Set dynamic background gradient based on weather and time
+        const backgroundGradient = this.getBackgroundForWeather(weatherMain, description, timeOfDay);
+        console.log("Setting background to:", backgroundGradient);
 
-        // Force background change with explicit styling
-        document.body.style.backgroundImage = `url('${backgroundUrl}')`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center';
-        document.body.style.backgroundRepeat = 'no-repeat';
+        // Apply gradient background
+        document.body.style.background = backgroundGradient;
+        document.body.style.backgroundAttachment = 'fixed';
 
-        console.log("Background applied successfully!");
-        console.log("Current body background:", document.body.style.backgroundImage);
+        console.log("Background gradient applied successfully!");
+        console.log("Current body background:", document.body.style.background);
     },
 
     search: function (){
@@ -217,14 +235,10 @@ setInterval(() => {
 
 // Test: Set initial background immediately to verify it works
 console.log("Testing background functionality...");
-document.body.style.backgroundImage = "url('https://source.unsplash.com/1920x1080/?nature&sig=" + Date.now() + "')";
-document.body.style.backgroundSize = 'cover';
-document.body.style.backgroundPosition = 'center';
-console.log("Test background set:", document.body.style.backgroundImage);
+document.body.style.background = "linear-gradient(to bottom, #4ca1af, #c4e0e5)";
+console.log("Test background gradient set");
 
-// On page load, get weather based on user's location
-setTimeout(() => {
-    console.log("Starting weather fetch...");
-    weather.getLocationWeather();
-}, 1000);
+// On page load, get weather based on user's location immediately
+console.log("Starting weather fetch...");
+weather.getLocationWeather();
 
