@@ -8,7 +8,6 @@ body {
     font-family: 'Open Sans', sans-serif;
     font-size: 120%;
     position: relative;
-    transition: background 1.5s ease-in-out;
 }
 
 /* Add overlay for better text readability over background image */

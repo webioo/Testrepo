@@ -216,16 +216,8 @@ let weather={
         document.querySelector(".wind").innerText = "Wind speed: " + windSpeed + " km/h";
         document.querySelector(".weather").classList.remove("loading");
 
-        // Set dynamic background gradient based on weather and time
-        const backgroundGradient = this.getBackgroundForWeather(weatherMain, description, timeOfDay);
-        console.log("Setting background to:", backgroundGradient);
-
-        // Apply gradient background
-        document.body.style.background = backgroundGradient;
-        document.body.style.backgroundAttachment = 'fixed';
-
-        console.log("Background gradient applied successfully!");
-        console.log("Current body background:", document.body.style.background);
+        // Background remains as nnnnnnnn.jpg (static image)
+        console.log("Weather displayed. Background stays as nnnnnnnn.jpg");
     },
 
     search: function (){
