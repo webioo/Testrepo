@@ -3,20 +3,30 @@ let weather={
 
     // Fetch weather by city name
     fetchWeather: function(city) {
+        console.log("Fetching weather for city:", city);
         fetch("https://api.openweathermap.org/data/2.5/weather?q="
         + city
         + "&units=metric&appid="
         + this.apiKey
         )
-        .then((response)=> response.json())
-        .then((data) => this.displayWeather(data));
+        .then((response)=> {
+            console.log("Weather API response:", response);
+            return response.json();
+        })
+        .then((data) => this.displayWeather(data))
+        .catch((error) => console.error("Error fetching weather:", error));
     },
 
     // Fetch weather by coordinates (for geolocation)
     fetchWeatherByCoords: function(lat, lon) {
+        console.log("Fetching weather for coordinates:", lat, lon);
         fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`)
-        .then((response)=> response.json())
-        .then((data) => this.displayWeather(data));
+        .then((response)=> {
+            console.log("Weather API response:", response);
+            return response.json();
+        })
+        .then((data) => this.displayWeather(data))
+        .catch((error) => console.error("Error fetching weather:", error));
     },
 
     // Get time of day based on sunrise/sunset and current time
@@ -96,10 +106,19 @@ let weather={
                 backgroundQuery = `${timeOfDay} sky nature`;
         }
 
-        return `https://source.unsplash.com/1920x1080/?${encodeURIComponent(backgroundQuery)}`;
+        // Add timestamp to prevent caching and get different images
+        const timestamp = new Date().getTime();
+        const url = `https://source.unsplash.com/1920x1080/?${encodeURIComponent(backgroundQuery)}&sig=${timestamp}`;
+
+        console.log(`Weather: ${condition}, Time: ${timeOfDay}, Background: ${backgroundQuery}`);
+        console.log(`Background URL: ${url}`);
+
+        return url;
     },
 
     displayWeather: function(data) {
+        console.log("Weather data received:", data);
+
         const { name } = data;
         const { icon, description, main: weatherMain } = data.weather[0];
         const { temp, humidity } = data.main;
@@ -120,7 +139,9 @@ let weather={
 
         // Set dynamic background based on weather and time
         const backgroundUrl = this.getBackgroundForWeather(weatherMain, description, timeOfDay);
+        console.log("Setting background to:", backgroundUrl);
         document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+        console.log("Background applied successfully!");
     },
 
     search: function (){
@@ -129,18 +150,22 @@ let weather={
 
     // Get user's geolocation and fetch weather
     getLocationWeather: function() {
+        console.log("Getting location weather...");
         if (navigator.geolocation) {
             document.querySelector(".city").innerText = "Detecting location...";
+            console.log("Requesting geolocation...");
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
+                    console.log("Location detected:", lat, lon);
                     this.fetchWeatherByCoords(lat, lon);
                 },
                 (error) => {
                     console.error("Geolocation error:", error);
                     document.querySelector(".city").innerText = "Location access denied";
                     // Fallback to default city
+                    console.log("Falling back to Delhi");
                     this.fetchWeather("Delhi");
                 }
             );
