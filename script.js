@@ -292,12 +292,8 @@ setInterval(() => {
     dateDisplay.innerHTML = getCurrentDateAndTime();
 }, 1000);
 
-// Test: Set initial background immediately to verify it works
-console.log("Testing background functionality...");
-document.body.style.background = "linear-gradient(to bottom, #4ca1af, #c4e0e5)";
-console.log("Test background gradient set");
-
-// On page load, get weather based on user's location immediately
+// On page load, get weather based on user's location
+// Background starts with nnnnnnnn.jpg from CSS, then changes to gradient based on weather
 console.log("Starting weather fetch...");
 weather.getLocationWeather();
 

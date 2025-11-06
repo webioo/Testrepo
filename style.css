@@ -4,14 +4,14 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background: linear-gradient(to bottom, #4ca1af, #c4e0e5);
+    background: url('nnnnnnnn.jpg') center center / cover no-repeat fixed;
     font-family: 'Open Sans', sans-serif;
     font-size: 120%;
     position: relative;
     transition: background 1.5s ease-in-out;
 }
 
-/* Add subtle overlay for better text readability */
+/* Add overlay for better text readability over background image */
 body::before {
     content: '';
     position: absolute;
@@ -19,7 +19,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 0;
     pointer-events: none;
 }
