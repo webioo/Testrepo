@@ -140,8 +140,15 @@ let weather={
         // Set dynamic background based on weather and time
         const backgroundUrl = this.getBackgroundForWeather(weatherMain, description, timeOfDay);
         console.log("Setting background to:", backgroundUrl);
+
+        // Force background change with explicit styling
         document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundRepeat = 'no-repeat';
+
         console.log("Background applied successfully!");
+        console.log("Current body background:", document.body.style.backgroundImage);
     },
 
     search: function (){
@@ -208,6 +215,16 @@ setInterval(() => {
     dateDisplay.innerHTML = getCurrentDateAndTime();
 }, 1000);
 
+// Test: Set initial background immediately to verify it works
+console.log("Testing background functionality...");
+document.body.style.backgroundImage = "url('https://source.unsplash.com/1920x1080/?nature&sig=" + Date.now() + "')";
+document.body.style.backgroundSize = 'cover';
+document.body.style.backgroundPosition = 'center';
+console.log("Test background set:", document.body.style.backgroundImage);
+
 // On page load, get weather based on user's location
-weather.getLocationWeather();
+setTimeout(() => {
+    console.log("Starting weather fetch...");
+    weather.getLocationWeather();
+}, 1000);
 
