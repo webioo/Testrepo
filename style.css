@@ -6,9 +6,25 @@ body {
     margin: 0;
     background: #222;
     font-family: 'Open Sans', sans-serif;
-    background-image: url('https://source.unsplash.com/random/900x700/?nature');
-    background-size: 1280px 720px;
+    background-image: url('https://source.unsplash.com/random/1920x1080/?nature');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     font-size: 120%;
+    transition: background-image 1s ease-in-out;
+    position: relative;
+}
+
+/* Add overlay for better text readability */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 0;
 }
 
 
@@ -21,6 +37,10 @@ body {
     width: 100%;
     margin: 1em;
     max-width: 420px;
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .search{
@@ -56,6 +76,14 @@ input.search-bar {
 
 button:hover {
     background: #7c7c7c6b;
+}
+
+.location-btn {
+    background: #4a90e2 !important;
+}
+
+.location-btn:hover {
+    background: #357ab8 !important;
 }
 
 h1.temp {
